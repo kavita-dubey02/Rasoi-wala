@@ -1,0 +1,74 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Setup known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy via SSH
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e
+            cd ${{ secrets.PROJECT_PATH }}
+
+            echo "🛠 Putting app in maintenance mode..."
+            php artisan down || true
+
+            echo "🔄 Pulling latest changes..."
+            git pull origin master
+
+            echo "📦 Checking if composer install is needed..."
+            CHANGED=false
+            if [ ! -d "vendor" ]; then
+              CHANGED=true
+            elif [ composer.lock -nt vendor ]; then
+              CHANGED=true
+            fi
+
+            if [ "$CHANGED" = true ]; then
+              echo "📦 Installing composer dependencies..."
+              composer install --no-interaction --prefer-dist --optimize-autoloader
+            else
+              echo "✅ Skipping composer install - no changes."
+            fi
+
+            echo "🗄 Checking if migrations are pending..."
+            OUTDATED=$(php artisan migrate:status | grep 'No' | wc -l)
+            if [ "$OUTDATED" -gt 0 ]; then
+              echo "🗄 Running pending migrations..."
+              php artisan migrate --force --verbose
+            else
+              echo "✅ No migrations needed."
+            fi
+
+            echo "🧹 Clearing caches..."
+            php artisan cache:clear
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+
+            echo "🚀 Optimizing application..."
+
+            echo "🔓 Bringing app back online..."
+            php artisan up
+
+            echo "✅ Deployment completed!"
+          EOF
