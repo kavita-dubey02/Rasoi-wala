@@ -279,41 +279,42 @@ public function updateProfile(Request $request)
 
     $request->validate([
       
-        'name' => 'required|string|max:255',
-        'mobile' => ['required','digits:10', Rule::unique('users')->ignore($user->id)],
-        'email' => ['nullable','email', Rule::unique('users')->ignore($user->id)],
-        'gender' => 'required',
-        'dob' => 'required|date',
-        'password' => 'nullable|min:6',
+        'name' => 'nullable|string|max:255',
 
-        'current_building' => 'required',
-        'current_street' => 'required',
-        'current_city' => 'required',
-        'current_state' => 'required',
-        'current_pincode' => 'required',
+    'mobile' => ['nullable','digits:10', Rule::unique('users')->ignore($user->id)],
 
-        'permanent_building' => 'required',
-        'permanent_street' => 'required',
-        'permanent_city' => 'required',
-        'permanent_state' => 'required',
-        'permanent_pincode' => 'required',
+    'email' => ['nullable','email', Rule::unique('users')->ignore($user->id)],
 
-  
-        'price_per_hour' => 'required|numeric|min:0',
-        'experience_year' => 'required|numeric|min:0',
-        'bio' => 'required|string',
-        'speciality' => 'required|string',
+    'gender' => 'nullable|string',
+    'dob' => 'nullable|date',
+    'password' => 'nullable|min:6',
 
-      
-        'aadhaar_front' => 'nullable|image|mimes:jpg,png,jpeg',
-        'aadhaar_back' => 'nullable|image|mimes:jpg,png,jpeg',
-        'pancard' => 'nullable|image|mimes:jpg,png,jpeg',
-        'address_proof' => 'nullable|image|mimes:jpg,png,jpeg',
+    'current_building' => 'nullable|string',
+    'current_street' => 'nullable|string',
+    'current_city' => 'nullable|string',
+    'current_state' => 'nullable|string',
+    'current_pincode' => 'nullable|string',
 
+    'permanent_building' => 'nullable|string',
+    'permanent_street' => 'nullable|string',
+    'permanent_city' => 'nullable|string',
+    'permanent_state' => 'nullable|string',
+    'permanent_pincode' => 'nullable|string',
 
-        'account_holder_name' => 'required|string',
-        'account_number' => 'required|string',
-        'ifsc_code' => 'required|string',
+    'price_per_hour' => 'nullable|numeric|min:0',
+    'experience_year' => 'nullable|numeric|min:0',
+    'bio' => 'nullable|string',
+    'speciality' => 'nullable|string',
+
+    'aadhaar_front' => 'nullable|image|mimes:jpg,png,jpeg',
+    'aadhaar_back' => 'nullable|image|mimes:jpg,png,jpeg',
+    'pancard' => 'nullable|image|mimes:jpg,png,jpeg',
+    'address_proof' => 'nullable|image|mimes:jpg,png,jpeg',
+
+    'account_holder_name' => 'nullable|string',
+    'account_number' => 'nullable|string',
+    'ifsc_code' => 'nullable|string',
+
     ]);
 
     DB::beginTransaction();
