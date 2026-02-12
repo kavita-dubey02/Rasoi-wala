@@ -49,15 +49,9 @@ jobs:
             else
               echo "✅ Skipping composer install - no changes."
             fi
-
-            echo "🗄 Checking if migrations are pending..."
-            OUTDATED=$(php artisan migrate:status | grep 'No' | wc -l)
-            if [ "$OUTDATED" -gt 0 ]; then
-              echo "🗄 Running pending migrations..."
-              php artisan migrate --force --verbose
-            else
-              echo "✅ No migrations needed."
-            fi
+            echo "🗄 Running pending migrations..."
+            php artisan migrate --force
+            
 
             echo "🧹 Clearing caches..."
             php artisan cache:clear
