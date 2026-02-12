@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
+
 use App\Models\chef_profile; ;
 use App\Models\chef_document;
 use App\Models\chef_bank;
