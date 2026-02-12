@@ -279,103 +279,109 @@ public function updateProfile(Request $request)
         ], 401);
     }
 
-    $request->validate([
-      
+    $validated = $request->validate([
         'name' => 'nullable|string|max:255',
+        'mobile' => ['nullable','digits:10', Rule::unique('users')->ignore($user->id)],
+        'email' => ['nullable','email', Rule::unique('users')->ignore($user->id)],
+        'gender' => 'nullable|string',
+        'dob' => 'nullable|date',
+        'password' => 'nullable|min:6',
 
-    'mobile' => ['nullable','digits:10', Rule::unique('users')->ignore($user->id)],
+        'current_building' => 'nullable|string',
+        'current_street' => 'nullable|string',
+        'current_city' => 'nullable|string',
+        'current_state' => 'nullable|string',
+        'current_pincode' => 'nullable|string',
 
-    'email' => ['nullable','email', Rule::unique('users')->ignore($user->id)],
+        'permanent_building' => 'nullable|string',
+        'permanent_street' => 'nullable|string',
+        'permanent_city' => 'nullable|string',
+        'permanent_state' => 'nullable|string',
+        'permanent_pincode' => 'nullable|string',
 
-    'gender' => 'nullable|string',
-    'dob' => 'nullable|date',
-    'password' => 'nullable|min:6',
+        'price_per_hour' => 'nullable|numeric|min:0',
+        'experience_year' => 'nullable|numeric|min:0',
+        'bio' => 'nullable|string',
+        'speciality' => 'nullable|string',
 
-    'current_building' => 'nullable|string',
-    'current_street' => 'nullable|string',
-    'current_city' => 'nullable|string',
-    'current_state' => 'nullable|string',
-    'current_pincode' => 'nullable|string',
+        'aadhaar_front' => 'nullable|image|mimes:jpg,png,jpeg',
+        'aadhaar_back' => 'nullable|image|mimes:jpg,png,jpeg',
+        'pancard' => 'nullable|image|mimes:jpg,png,jpeg',
+        'address_proof' => 'nullable|image|mimes:jpg,png,jpeg',
 
-    'permanent_building' => 'nullable|string',
-    'permanent_street' => 'nullable|string',
-    'permanent_city' => 'nullable|string',
-    'permanent_state' => 'nullable|string',
-    'permanent_pincode' => 'nullable|string',
-
-    'price_per_hour' => 'nullable|numeric|min:0',
-    'experience_year' => 'nullable|numeric|min:0',
-    'bio' => 'nullable|string',
-    'speciality' => 'nullable|string',
-
-    'aadhaar_front' => 'nullable|image|mimes:jpg,png,jpeg',
-    'aadhaar_back' => 'nullable|image|mimes:jpg,png,jpeg',
-    'pancard' => 'nullable|image|mimes:jpg,png,jpeg',
-    'address_proof' => 'nullable|image|mimes:jpg,png,jpeg',
-
-    'account_holder_name' => 'nullable|string',
-    'account_number' => 'nullable|string',
-    'ifsc_code' => 'nullable|string',
-
+        'account_holder_name' => 'nullable|string',
+        'account_number' => 'nullable|string',
+        'ifsc_code' => 'nullable|string',
     ]);
 
     DB::beginTransaction();
 
     try {
 
- 
-        $userData = $request->only(['name','email','mobile','gender','dob']);
+        /** ---------------- USER TABLE ---------------- */
+        $userFields = ['name','email','mobile','gender','dob'];
+        $userData = [];
+
+        foreach ($userFields as $field) {
+            if ($request->has($field) && $request->$field !== null) {
+                $userData[$field] = $request->$field;
+            }
+        }
+
+        if (!empty($userData)) {
+            $user->update($userData);
+        }
 
         if ($request->filled('password')) {
-            $userData['password'] = Hash::make($request->password);
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
         }
 
-        $user->update($userData);
+        /** ---------------- CHEF PROFILE ---------------- */
+        $profileFields = [
+            'current_building','current_street','current_city','current_state','current_pincode',
+            'permanent_building','permanent_street','permanent_city','permanent_state','permanent_pincode',
+            'price_per_hour','experience_year','bio','speciality'
+        ];
 
-      
-        $profile = ChefProfile::updateOrCreate(
-            ['user_id' => $user->id],
-            $request->only([
-                'current_building',
-                'current_street',
-                'current_city',
-                'current_state',
-                'current_pincode',
-                'permanent_building',
-                'permanent_street',
-                'permanent_city',
-                'permanent_state',
-                'permanent_pincode',
-                'price_per_hour',
-                'experience_year',
-                'bio',
-                'speciality'
-            ])
-        );
+        $profileData = [];
+        foreach ($profileFields as $field) {
+            if ($request->has($field) && $request->$field !== null) {
+                $profileData[$field] = $request->$field;
+            }
+        }
 
-        ChefBank::updateOrCreate(
-            ['user_id' => $user->id],
-            $request->only([
-                'account_holder_name',
-                'account_number',
-                'ifsc_code'
-            ])
-        );
+        if (!empty($profileData)) {
+            ChefProfile::updateOrCreate(
+                ['user_id' => $user->id],
+                $profileData
+            );
+        }
 
-        
+        /** ---------------- BANK DETAILS ---------------- */
+        $bankFields = ['account_holder_name','account_number','ifsc_code'];
+        $bankData = [];
+
+        foreach ($bankFields as $field) {
+            if ($request->has($field) && $request->$field !== null) {
+                $bankData[$field] = $request->$field;
+            }
+        }
+
+        if (!empty($bankData)) {
+            ChefBank::updateOrCreate(
+                ['user_id' => $user->id],
+                $bankData
+            );
+        }
+
+        /** ---------------- DOCUMENT UPLOADS ---------------- */
         $documentData = [];
-
-        if ($request->hasFile('aadhaar_front')) {
-            $documentData['aadhaar_front'] = $request->file('aadhaar_front')->store('documents', 'public');
-        }
-        if ($request->hasFile('aadhaar_back')) {
-            $documentData['aadhaar_back'] = $request->file('aadhaar_back')->store('documents', 'public');
-        }
-        if ($request->hasFile('pancard')) {
-            $documentData['pancard'] = $request->file('pancard')->store('documents', 'public');
-        }
-        if ($request->hasFile('address_proof')) {
-            $documentData['address_proof'] = $request->file('address_proof')->store('documents', 'public');
+        foreach (['aadhaar_front','aadhaar_back','pancard','address_proof'] as $doc) {
+            if ($request->hasFile($doc)) {
+                $documentData[$doc] = $request->file($doc)->store('documents', 'public');
+            }
         }
 
         if (!empty($documentData)) {
@@ -390,10 +396,6 @@ public function updateProfile(Request $request)
         return response()->json([
             'status' => true,
             'message' => 'Profile updated successfully',
-            'data' => [
-                'user' => $user,
-                'profile' => $profile
-            ]
         ]);
 
     } catch (\Exception $e) {
