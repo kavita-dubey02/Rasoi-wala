@@ -406,4 +406,33 @@ public function updateProfile(Request $request)
         ], 500);
     }
 }
+
+public function chefBookingCount(){
+    $chef = $request->user();
+
+    if (!$chef) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Unauthenticated'
+        ], 401);
+    }
+
+    // Total bookings of this chef
+    $totalBookings = Booking::where('chef_id', $chef->id)->count();
+
+    // Total earnings of this chef
+    $totalEarnings = Booking::where('chef_id', $chef->id)
+                            ->where('status', 'confirmed') // optional
+                            ->sum('total_amount'); // change column name if needed
+
+    return response()->json([
+        'status' => true,
+        'data' => [
+            'chef_id' => $chef->id,
+            'chef_name' => $chef->name,
+            'total_bookings' => $totalBookings,
+            'total_earnings' => $totalEarnings
+        ]
+    ]);
+}
 }
