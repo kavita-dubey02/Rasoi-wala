@@ -88,7 +88,7 @@
   </div>
 
   <!-- Navbar -->
-  include('admin.layouts.nav-top')
+  @include('admin.layouts.nav-top')
   <!-- /.navbar -->
 
   <!-- Main Sidebar Container -->

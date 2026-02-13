@@ -435,4 +435,116 @@ public function chefBookingCount(){
         ]
     ]);
 }
+public function updatepersonalProfile(){
+    $user = $request->user();
+
+    if (!$user) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Unauthenticated'
+        ], 401);
+    }
+
+    $validated = $request->validate([
+        'name' => 'nullable|string|max:255',
+        'mobile' => ['nullable','digits:10', Rule::unique('users')->ignore($user->id)],
+        'email' => ['nullable','email', Rule::unique('users')->ignore($user->id)],
+        'gender' => 'nullable|string',
+        'dob' => 'nullable|date',
+        // 'password' => 'nullable|min:6',
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+
+        $data = [];
+
+        foreach (['name','mobile','email','gender','dob'] as $field) {
+            if ($request->has($field) && $request->$field !== null) {
+                $data[$field] = $request->$field;
+            }
+        }
+
+        if (!empty($data)) {
+            $user->update($data);
+        }
+
+        // if ($request->filled('password')) {
+        //     $user->update([
+        //         'password' => Hash::make($request->password)
+        //     ]);
+        // }
+
+        DB::commit();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Personal profile updated successfully'
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+
+}
+public function updateaddressProfile(){
+     $user = $request->user();
+
+    if (!$user) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Unauthenticated'
+        ], 401);
+    }
+
+    $validated = $request->validate([
+        'current_building' => 'nullable|string',
+        'current_street'   => 'nullable|string',
+        'current_city'     => 'nullable|string',
+        'current_state'    => 'nullable|string',
+        'current_pincode'  => 'nullable|string',
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+
+        $data = [];
+
+        foreach ($validated as $key => $value) {
+            if ($value !== null) {
+                $data[$key] = $value;
+            }
+        }
+
+        if (!empty($data)) {
+            chef_profile::updateOrCreate(
+                ['user_id' => $user->id],
+                $data
+            );
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Current address updated successfully'
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
 }
