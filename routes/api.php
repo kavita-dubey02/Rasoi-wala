@@ -30,7 +30,7 @@ Route::middleware(['auth:sanctum', 'role:chef'])->prefix('chef')->group(function
     Route::post('/booking-status-update', [ChefAuthController::class, 'updateStatus']);
     Route::post('/profile-update', [ChefAuthController::class, 'updateProfile']);
     Route::post('/profile-personal-detailupdate', [ChefAuthController::class, 'updatepersonalProfile']);
-    Route::post('/profile-address-update', [ChefAuthController::class, 'updateaddressProfile']);
+    Route::post('/profile-address-update', [ChefAuthController::class, 'updateProfileAddress']);
     Route::get('/profile-bookingdetail', [ChefAuthController::class, 'chefBookingCount']);
     
 

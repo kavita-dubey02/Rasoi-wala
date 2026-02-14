@@ -493,7 +493,7 @@ public function updatepersonalProfile(Request $request){
     }
 
 }
-public function updateaddressProfile(Request $request){
+public function updateProfileAddress(Request $request){
      $user = $request->user();
 
     if (!$user) {
