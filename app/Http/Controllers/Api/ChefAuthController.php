@@ -435,7 +435,7 @@ public function chefBookingCount(){
         ]
     ]);
 }
-public function updatepersonalProfile(){
+public function updatepersonalProfile(Request $request){
     $user = $request->user();
 
     if (!$user) {
@@ -493,7 +493,7 @@ public function updatepersonalProfile(){
     }
 
 }
-public function updateaddressProfile(){
+public function updateaddressProfile(Request $request){
      $user = $request->user();
 
     if (!$user) {
