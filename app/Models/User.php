@@ -11,7 +11,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    protected $table = 'users';
+    protected $table = "users";
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable ,HasRoles,HasApiTokens;
 
@@ -40,7 +40,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
-
+//helo 
     /**
      * Get the attributes that should be cast.
      *
