@@ -407,7 +407,7 @@ public function updateProfilechef(Request $request)
     }
 }
 
-public function chefBookingCount(){
+public function chefBookingCount(Request $request){
     $chef = $request->user();
 
     if (!$chef) {

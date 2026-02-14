@@ -181,6 +181,8 @@ public function addressstore(Request $request)
 
 public function chefList()
 {
+    $rating = rand(10, 50) / 10;
+
     $chefs = User::whereHas('roles', function ($q) {
             $q->where('name', 'chef');
         })
@@ -191,6 +193,8 @@ public function chefList()
             return [
                 'chef_id' => $chef->id,
                 'chef_name' => $chef->name,
+                'bio' => $chef->bio,
+                'rating' => $rating,
                 'is_available' => (bool) optional($chef->chefProfile)->is_available,
                 'availability_text' => optional($chef->chefProfile)->is_available ? 'Online' : 'Offline',
             ];
@@ -281,7 +285,77 @@ public function myBookings(Request $request)
         'bookings' => $bookings
     ]);
 }
+ 
+public function UserProfileupdate(Request $request){
+   $user = $request->user();
 
+        $validated = $request->validate([
+            'name'   => 'nullable|string|max:255',
+            'email'  => [
+                'nullable',
+                'email',
+                Rule::unique(User::class, 'email')->ignore($user->id),
+            ],
+            'mobile' => [
+                'nullable',
+                'digits:10',
+                Rule::unique(User::class, 'mobile')->ignore($user->id),
+            ],
+            'gender' => 'nullable|string',
+            'dob'    => 'nullable|date',
+        ]);
 
+        DB::beginTransaction();
+
+        try {
+
+            $user->update($validated);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Profile updated successfully',
+                'user' => $user
+            ]);
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+}
+
+public function getProfile(Request $request)
+{
+    $user = $request->user();
+
+    return response()->json([
+        'status' => true,
+        'data' => [
+            'name'   => $user->name,
+            'email'  => $user->email,
+            'mobile' => $user->mobile,
+            'gender' => $user->gender,
+            'dob'    => $user->dob,
+        ]
+    ]);
+}
+
+public function addressGet(Request $request)
+{
+    $addresses = Address::where('user_id', $request->user()->id)
+                        ->select('id','address_line','city','state','pincode','latitude','longitude')
+                        ->get();
+
+    return response()->json([
+        'status' => true,
+        'data'   => $addresses
+    ]);
+}
 
 }

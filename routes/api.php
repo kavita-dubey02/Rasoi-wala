@@ -54,10 +54,13 @@ Route::middleware(['auth:sanctum', 'role:customer'])->prefix('user')->group(func
     Route::post('/book-chef', [UserAuthController::class, 'store']);
     
     Route::post('/address', [UserAuthController::class, 'addressstore']);
+    Route::get('/address-get', [UserAuthController::class, 'addressGet']);
     Route::get('/chefs', [UserAuthController::class, 'chefList']);
      Route::put('/updateaddresse/{id}', [UserAuthController::class, 'addressupdate']);
     Route::delete('/deleteaddresses/{id}', [UserAuthController::class, 'addressdestroy']);
     Route::get('/bookings', [UserAuthController::class, 'myBookings']);
+    Route::get('/User-Profile-show', [UserAuthController::class, 'getProfile']);
+    Route::post('/User-Profile-update', [UserAuthController::class, 'UserProfileupdate']);
 
     
 });
