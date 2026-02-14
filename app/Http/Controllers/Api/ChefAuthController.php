@@ -268,7 +268,7 @@ public function updateStatus(Request $request)
     ]);
 }
 
-public function updateProfile(Request $request)
+public function updateProfilechef(Request $request)
 {
     $user = $request->user();
 
