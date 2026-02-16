@@ -356,7 +356,7 @@ public function updateProfilechef(Request $request)
         }
 
         if (!empty($profileData)) {
-            ChefProfile::updateOrCreate(
+            Chef_Profile::updateOrCreate(
                 ['user_id' => $user->id],
                 $profileData
             );
@@ -373,7 +373,7 @@ public function updateProfilechef(Request $request)
         }
 
         if (!empty($bankData)) {
-            ChefBank::updateOrCreate(
+            Chef_Bank::updateOrCreate(
                 ['user_id' => $user->id],
                 $bankData
             );
@@ -388,7 +388,7 @@ public function updateProfilechef(Request $request)
         }
 
         if (!empty($documentData)) {
-            ChefDocument::updateOrCreate(
+            Chef_Document::updateOrCreate(
                 ['user_id' => $user->id],
                 $documentData
             );
@@ -450,8 +450,8 @@ public function updatepersonalProfile(Request $request){
 
     $validated = $request->validate([
         'name' => 'nullable|string|max:255',
-        'mobile' => ['nullable','digits:10', Rule::unique('users')->ignore($user->id)],
-        'email' => ['nullable','email', Rule::unique('users')->ignore($user->id)],
+        'mobile' => ['nullable','digits:10', Rule::unique(User::class, 'mobile')->ignore($request->user()->id),],
+        'email' => ['nullable','email', Rule::unique(User::class, 'email')->ignore($request->user()->id),],
         'gender' => 'nullable|string',
         'dob' => 'nullable|date',
         // 'password' => 'nullable|min:6',
