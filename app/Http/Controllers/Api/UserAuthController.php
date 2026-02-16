@@ -181,7 +181,7 @@ public function addressstore(Request $request)
 
 public function chefList()
 {
-    $rating = rand(10, 50) / 10;
+    
 
     $chefs = User::whereHas('roles', function ($q) {
             $q->where('name', 'chef');
@@ -194,7 +194,7 @@ public function chefList()
                 'chef_id' => $chef->id,
                 'chef_name' => $chef->name,
                  'food_category' => optional($chef->chefProfile)->food_category,
-                'rating' => $rating,
+               'rating' => rand(10, 50) / 10,
                 'is_available' => (bool) optional($chef->chefProfile)->is_available,
                 'availability_text' => optional($chef->chefProfile)->is_available ? 'Online' : 'Offline',
             ];
