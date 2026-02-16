@@ -49,6 +49,7 @@ public function register(Request $request)
         'experience_year' => 'required',
         'bio' => 'required',
         'speciality' => 'required',
+        'food_category'=> 'required',
 
         // Step 3 Documents
         'aadhaar_front' => 'required|image|mimes:jpg,png,jpeg',
@@ -90,6 +91,7 @@ public function register(Request $request)
         'price_per_hour' => $request->price_per_hour,
         'experience_year' => $request->experience_year,
         'bio' => $request->bio,
+        'food_category' => $request->food_category,
         'speciality' => $request->speciality,
     ]);
 
@@ -302,6 +304,7 @@ public function updateProfilechef(Request $request)
         'price_per_hour' => 'nullable|numeric|min:0',
         'experience_year' => 'nullable|numeric|min:0',
         'bio' => 'nullable|string',
+        'food_category'=>'required',
         'speciality' => 'nullable|string',
 
         'aadhaar_front' => 'nullable|image|mimes:jpg,png,jpeg',
@@ -341,7 +344,7 @@ public function updateProfilechef(Request $request)
         /** ---------------- CHEF PROFILE ---------------- */
         $profileFields = [
             'current_building','current_street','current_city','current_state','current_pincode',
-            'permanent_building','permanent_street','permanent_city','permanent_state','permanent_pincode',
+            'permanent_building','permanent_street','permanent_city','permanent_state','permanent_pincode','food_category',
             'price_per_hour','experience_year','bio','speciality'
         ];
 

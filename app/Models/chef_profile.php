@@ -27,6 +27,7 @@ class chef_profile extends Model
     'price_per_hour',
     'experience_year',
     'bio',
+    'chef_category',
     'speciality',
     'rating',
     'total_reviews',

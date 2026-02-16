@@ -193,7 +193,7 @@ public function chefList()
             return [
                 'chef_id' => $chef->id,
                 'chef_name' => $chef->name,
-                'bio' => $chef->bio,
+                 'food_category' => optional($chef->chefProfile)->food_category,
                 'rating' => $rating,
                 'is_available' => (bool) optional($chef->chefProfile)->is_available,
                 'availability_text' => optional($chef->chefProfile)->is_available ? 'Online' : 'Offline',
