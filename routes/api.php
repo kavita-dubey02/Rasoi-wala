@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ChefAuthController;
 use App\Http\Controllers\Api\UserAuthController;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,10 @@ use App\Http\Controllers\Api\UserAuthController;
 Route::prefix('chef')->group(function () {
     Route::post('/register', [ChefAuthController::class, 'register']);
     Route::post('/login', [ChefAuthController::class, 'login']);
+      Route::post('/send-otp', [ChefAuthController::class, 'sendOtp']);
+    Route::post('/verify-otp', [ChefAuthController::class, 'verifyOtp']);
 });
+
 
 
 
@@ -40,15 +44,20 @@ Route::middleware(['auth:sanctum', 'role:chef'])->prefix('chef')->group(function
 Route::prefix('user')->group(function () {
     Route::post('/register', [UserAuthController::class, 'register']);
     Route::post('/login', [UserAuthController::class, 'login']);
+      Route::post('/send-otp', [UserAuthController::class, 'sendOtp']);
+    Route::post('/verify-otp', [UserAuthController::class, 'verifyOtp']);
     
 
 });
 
 
 
-Route::middleware(['auth:sanctum', 'role:customer'])->prefix('user')->group(function () {
-
+// Logout only needs auth — no role check (any authenticated user can log out)
+Route::middleware(['auth:sanctum'])->prefix('user')->group(function () {
     Route::post('/logout', [UserAuthController::class, 'logout']);
+});
+
+Route::middleware(['auth:sanctum', 'role:customer'])->prefix('user')->group(function () {
 
     Route::get('/profile',[UserAuthController::class, 'profile']);
     Route::post('/book-chef', [UserAuthController::class, 'store']);

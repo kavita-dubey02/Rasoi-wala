@@ -16,10 +16,121 @@ use App\Models\Booking;
 use App\Models\Address;
 use App\Models\EventType;
 use Illuminate\Support\Facades\DB;
+ use App\Services\OtpService;
 
 
 class UserAuthController extends Controller
 {
+
+    public function sendOtp(Request $request, OtpService $otpService)
+{
+    $request->validate([
+        'mobile' => 'required|digits:10'
+    ]);
+
+    $mobile = $request->mobile;
+
+    $user = User::firstOrCreate(
+        ['mobile' => $mobile],
+        ['role' => 'customer']
+    );
+
+    // Assign Spatie role if not already assigned (needed for role:customer middleware)
+    if (!$user->hasRole('customer')) {
+        $user->assignRole('customer');
+    }
+
+    $otp = rand(1000, 9999); // 4-digit OTP
+
+    $user->update([
+        'otp'            => $otp,
+        'otp_expires_at' => now()->addMinutes(10)
+    ]);
+
+    $smsResponse = $otpService->sendOtp($mobile, $otp);
+
+    \Log::info("[User] Sending OTP: {$otp} to {$mobile}");
+    \Log::info("[User] SMS API Response: " . $smsResponse);
+
+    return response()->json([
+        'status'  => true,
+        'message' => 'OTP sent successfully'
+    ]);
+}
+
+public function verifyOtp(Request $request)
+{
+    $request->validate([
+        'mobile' => 'required|digits:10',
+        'otp'    => 'required|digits:4',  // Must match 4-digit OTP generated in sendOtp
+    ]);
+
+    // Step 1: Find user
+    $user = User::where('mobile', $request->mobile)->first();
+
+    if (!$user) {
+        return response()->json([
+            'status'  => false,
+            'message' => 'Mobile number not registered',
+        ], 404);
+    }
+
+    // Step 2: Check if OTP was ever sent
+    if (is_null($user->otp) || is_null($user->otp_expires_at)) {
+        return response()->json([
+            'status'  => false,
+            'message' => 'No OTP requested. Please request a new OTP.',
+        ], 422);
+    }
+
+    // Step 3: Check expiry BEFORE comparing value
+    if (now()->gt($user->otp_expires_at)) {
+        // Clear expired OTP
+        $user->update(['otp' => null, 'otp_expires_at' => null]);
+
+        return response()->json([
+            'status'  => false,
+            'message' => 'OTP has expired. Please request a new OTP.',
+        ], 422);
+    }
+
+    // Step 4: Compare OTP value (strict string comparison)
+    if ((string) $user->otp !== (string) $request->otp) {
+        return response()->json([
+            'status'  => false,
+            'message' => 'Invalid OTP. Please try again.',
+        ], 422);
+    }
+
+    // Step 5: OTP verified — clear it from DB
+    $user->update([
+        'otp'            => null,
+        'otp_expires_at' => null,
+    ]);
+
+    // Step 6: Revoke all previous tokens (single active session)
+    $user->tokens()->delete();
+
+    // Step 7: Generate a fresh Sanctum token
+    $token = $user->createToken('user-mobile-app')->plainTextToken;
+
+    return response()->json([
+        'status'      => true,
+        'message'     => 'OTP verified. Login successful.',
+        'token'       => $token,
+        'token_type'  => 'Bearer',
+        'user'        => [
+            'id'     => $user->id,
+            'name'   => $user->name,
+            'mobile' => $user->mobile,
+            'email'  => $user->email,
+            'gender' => $user->gender,
+            'dob'    => $user->dob,
+            'roles'  => $user->getRoleNames(),
+        ],
+    ]);
+}
+
     public function register(Request $request)
 {
     $request->validate([

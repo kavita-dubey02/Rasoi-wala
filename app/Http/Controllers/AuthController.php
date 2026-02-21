@@ -6,9 +6,13 @@ use Illuminate\Http\Request;
  use Illuminate\Support\Facades\Auth;
  use App\Models\User;
  use Illuminate\Support\Facades\Hash;
+ use App\Services\OtpService;
+ 
 
 class AuthController extends Controller
 {
+
+        
  public function showLogin()
 {
     return view('auth.login');

@@ -9,17 +9,151 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 
-use App\Models\chef_profile; ;
+use App\Models\chef_profile; 
 use App\Models\chef_document;
 use App\Models\chef_bank;
 use App\Models\EventType;
 use App\Models\Address;
 use App\Models\Booking;
 use Illuminate\Support\Facades\DB;
+use App\Services\OtpService;
+use Spatie\Permission\Models\Role;
+
+
 
 
 class ChefAuthController extends Controller
 {
+
+
+public function sendOtp(Request $request, OtpService $otpService)
+{
+    $request->validate([
+        'mobile' => 'required|digits:10'
+    ]);
+
+    $mobile = $request->mobile;
+
+    $user = User::where('mobile', $mobile)->first();
+
+    if (!$user) {
+        return response()->json([
+            'status' => false,
+            'message' => 'User not found'
+        ]);
+    }
+
+    if (!$user->hasRole('chef')) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Not a chef account'
+        ]);
+    }
+
+    $otp = rand(1000, 9999);
+
+    $user->update([
+        'otp' => $otp,
+        'otp_expires_at' => now()->addMinutes(10)
+    ]);
+
+  
+    $smsResponse = $otpService->sendOtp($mobile, $otp);
+
+    \Log::info("SMS API Response: " . $smsResponse);
+
+    return response()->json([
+        'status' => true,
+        'message' => 'OTP Sent'
+    ]);
+}
+
+public function verifyOtp(Request $request)
+{
+    $request->validate([
+        'mobile' => 'required|digits:10',
+        'otp'    => 'required|digits:4',
+    ]);
+
+    // Step 1: Find user
+    $user = User::where('mobile', $request->mobile)->first();
+
+    if (!$user) {
+        return response()->json([
+            'status'  => false,
+            'message' => 'Mobile number not registered',
+        ], 404);
+    }
+
+    // Step 2: Ensure this is a chef account
+    if (!$user->hasRole('chef')) {
+        return response()->json([
+            'status'  => false,
+            'message' => 'Not a chef account',
+        ], 403);
+    }
+
+    // Step 3: Check if OTP was ever sent
+    if (is_null($user->otp) || is_null($user->otp_expires_at)) {
+        return response()->json([
+            'status'  => false,
+            'message' => 'No OTP requested. Please request a new OTP.',
+        ], 422);
+    }
+
+    // Step 4: Check expiry BEFORE comparing value
+    if (now()->gt($user->otp_expires_at)) {
+        // Clear expired OTP
+        $user->update(['otp' => null, 'otp_expires_at' => null]);
+
+        return response()->json([
+            'status'  => false,
+            'message' => 'OTP has expired. Please request a new OTP.',
+        ], 422);
+    }
+
+    // Step 5: Compare OTP value (strict string comparison)
+    if ((string) $user->otp !== (string) $request->otp) {
+        return response()->json([
+            'status'  => false,
+            'message' => 'Invalid OTP. Please try again.',
+        ], 422);
+    }
+
+    // Step 6: OTP verified — clear it from DB
+    $user->update([
+        'otp'            => null,
+        'otp_expires_at' => null,
+    ]);
+
+    // Step 7: Revoke all previous tokens (single active session)
+    $user->tokens()->delete();
+
+    // Step 8: Generate a fresh Sanctum token
+    $token = $user->createToken('chef-mobile-app')->plainTextToken;
+
+    // Step 9: Load profile for app to use immediately after login
+    $user->load('chefProfile', 'chefDocuments', 'chefBank');
+
+    return response()->json([
+        'status'      => true,
+        'message'     => 'OTP verified. Login successful.',
+        'token'       => $token,
+        'token_type'  => 'Bearer',
+        'user'        => [
+            'id'          => $user->id,
+            'name'        => $user->name,
+            'mobile'      => $user->mobile,
+            'email'       => $user->email,
+            'gender'      => $user->gender,
+            'dob'         => $user->dob,
+            'roles'       => $user->getRoleNames(),
+            'profile'     => $user->chefProfile,
+            'documents'   => $user->chefDocuments,
+            'bank_details'=> $user->chefBank,
+        ],
+    ]);
+}
  
 
 public function register(Request $request)
