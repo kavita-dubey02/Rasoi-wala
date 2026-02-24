@@ -307,7 +307,7 @@
 
                 @endif
                 <li class="nav-item">
-                    <a href="{{route('web-admin.logout')}}" class="nav-link">
+                    <a href="{{ route('web-admin.logout') }}" class="nav-link">
                         <i class="nav-icon fas fa-user"></i>
                         <p>
                             logout

@@ -31,6 +31,7 @@ Route::middleware(['auth'])->prefix('web-admin')->as('web-admin.')->group(functi
     Route::get('dashboard',function(){
         return view('admin.index');
     })->name('dashboard');
+    Route::get('logout', [AdminAuthController::class, 'logout'])->name('logout');
     //Admin chef
     Route::get('chefadd',[ChefController::class,'chefadd'])->name('chefadd');
     Route::post('chefstore',[ChefController::class,'chefstore'])->name('chefstore');
@@ -81,7 +82,7 @@ Route::delete('/bookingdelte/{id}', [BookingController::class, 'delete'])->name(
 
 
 
-    Route::get('logout',[AuthController::class,'logout'])->name('logout');
+
 });
 
 //dashboard
