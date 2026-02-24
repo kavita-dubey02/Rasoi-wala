@@ -52,7 +52,7 @@ Route::prefix('user')->group(function () {
 
 
 
-// Logout only needs auth — no role check (any authenticated user can log out)
+//Logout only needs auth — no role check (any authenticated user can log out)
 Route::middleware(['auth:sanctum'])->prefix('user')->group(function () {
     Route::post('/logout', [UserAuthController::class, 'logout']);
 });

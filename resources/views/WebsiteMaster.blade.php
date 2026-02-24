@@ -610,6 +610,8 @@
     <a href="{{ route('web-admin.logout') }}" class="header-contact-btn d-none d-lg-block">
     <i class="fa-solid fa-right-to-bracket me-2"></i> logout
 </a>
+ <a href="{{ route('web-admin.dashboard') }}" class="header-contact-btn d-none d-lg-block">
+    <i class="fa-solid fa-bars me-2"></i>
     @else
   <!-- Contact Button -->
       <a href="{{ route('login') }}" class="header-contact-btn d-none d-lg-block">
