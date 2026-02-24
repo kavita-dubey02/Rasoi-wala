@@ -607,7 +607,7 @@
             {{ auth()->user()->name }}
         </span>
     </div>
-    <a href="{{ route('web-admin.logout') }}" class="header-contact-btn d-none d-lg-block">
+    <a href="{{ route('user.logout') }}" class="header-contact-btn d-none d-lg-block">
     <i class="fa-solid fa-right-to-bracket me-2"></i> logout
 </a>
 

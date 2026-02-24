@@ -19,6 +19,7 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showUserRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'saveUserRegister'])->name('register.user');
+Route::get('/logout', [AuthController::class, 'logout'])->name('user.logout');
 
 //admin login
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
