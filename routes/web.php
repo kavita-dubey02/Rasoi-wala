@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\ChefController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EventController;
@@ -13,11 +14,17 @@ use App\Http\Controllers\BookingController;
 Route::get('/', function () {
     return view('index');
 })->name('index');
-
+//user login 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showUserRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'saveUserRegister'])->name('register.user');
+
+//admin login
+Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login']);
+Route::get('/admin/register', [AdminAuthController::class, 'showAdminRegister'])->name('admin.register');
+Route::post('/admin/register', [AdminAuthController::class, 'saveAdminRegister'])->name('admin.register.save');
 
     
 Route::middleware(['auth'])->prefix('web-admin')->as('web-admin.')->group(function(){
