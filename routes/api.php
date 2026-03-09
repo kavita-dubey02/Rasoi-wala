@@ -14,6 +14,8 @@ use App\Http\Controllers\AuthController;
 
 // Chef Authentication
 Route::prefix('chef')->group(function () {
+    Route::post('/create-order',[ChefAuthController::class,'createOrder']);
+    Route::post('/verify-payment',[ChefAuthController::class,'verifyPayment']);
     Route::post('/register', [ChefAuthController::class, 'register']);
     Route::post('/login', [ChefAuthController::class, 'login']);
       Route::post('/send-otp', [ChefAuthController::class, 'sendOtp']);

@@ -18,12 +18,63 @@ use App\Models\Booking;
 use Illuminate\Support\Facades\DB;
 use App\Services\OtpService;
 use Spatie\Permission\Models\Role;
+use Razorpay\Api\Api;
+use Razorpay\Api\Errors\SignatureVerificationError;
 
 
 
 
 class ChefAuthController extends Controller
 {
+    //razorpay
+
+    public function createOrder()
+{
+    $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
+
+    $order = $api->order->create([
+        'receipt' => 'chef_register_'.time(),
+        'amount' => 1,
+        'currency' => 'INR'
+    ]);
+
+    return response()->json([
+        'status' => true,
+        'order_id' => $order['id'],
+        'amount' => 1,
+        'key' => env('RAZORPAY_KEY')
+    ]);
+}
+//verify payment
+public function verifyPayment(Request $request)
+{
+   
+
+    $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
+
+    try {
+
+        $attributes = [
+            'razorpay_order_id' => $request->razorpay_order_id,
+            'razorpay_payment_id' => $request->razorpay_payment_id,
+            'razorpay_signature' => $request->razorpay_signature
+        ];
+
+        $api->utility->verifyPaymentSignature($attributes);
+
+    } catch (SignatureVerificationError $e) {
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Payment verification failed'
+        ]);
+    }
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Payment verified successfully'
+    ]);
+}
 
 
 public function sendOtp(Request $request, OtpService $otpService)
@@ -158,8 +209,33 @@ public function verifyOtp(Request $request)
 
 public function register(Request $request)
 {
+
+    if(!$request->razorpay_payment_id){
+        return response()->json([
+            'message' => 'Payment required before registration'
+        ],400);
+    }
+
+    $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
+
+    try {
+
+        $attributes = [
+            'razorpay_order_id' => $request->razorpay_order_id,
+            'razorpay_payment_id' => $request->razorpay_payment_id,
+            'razorpay_signature' => $request->razorpay_signature
+        ];
+
+        $api->utility->verifyPaymentSignature($attributes);
+
+    } catch(SignatureVerificationError $e){
+
+        return response()->json([
+            'message' => 'Payment verification failed'
+        ],400);
+    }
+
     $request->validate([
-        // Step 1
         'name' => 'required|string',
         'mobile' => 'required|digits:10|unique:users',
         'email' => 'nullable|email|unique:users',
@@ -167,7 +243,6 @@ public function register(Request $request)
         'dob' => 'required|date',
         'password' => 'required|min:6',
 
-        // Step 2 Address
         'current_building' => 'required',
         'current_street' => 'required',
         'current_city' => 'required',
@@ -179,25 +254,22 @@ public function register(Request $request)
         'permanent_city' => 'required',
         'permanent_state' => 'required',
         'permanent_pincode' => 'required',
+
         'price_per_hour' => 'required',
         'experience_year' => 'required',
         'bio' => 'required',
         'speciality' => 'required',
         'food_category'=> 'required',
 
-        // Step 3 Documents
         'aadhaar_front' => 'required|image|mimes:jpg,png,jpeg',
         'aadhaar_back' => 'required|image|mimes:jpg,png,jpeg',
         'pancard' => 'required|image|mimes:jpg,png,jpeg',
-        'address_proof' => 'nullable|image|mimes:jpg,png,jpeg',
 
-        // Step 4 Bank
         'account_holder_name' => 'required',
         'account_number' => 'required',
         'ifsc_code' => 'required',
     ]);
 
-    // Create User
     $chef = User::create([
         'name' => $request->name,
         'mobile' => $request->mobile,
@@ -209,7 +281,6 @@ public function register(Request $request)
 
     $chef->assignRole('chef');
 
-    // Save Address
     chef_profile::create([
         'user_id' => $chef->id,
         'current_building' => $request->current_building,
@@ -229,26 +300,30 @@ public function register(Request $request)
         'speciality' => $request->speciality,
     ]);
 
-    // Store Documents
     $aadhaarFront = $request->file('aadhaar_front')->store('documents', 'public');
     $aadhaarBack = $request->file('aadhaar_back')->store('documents', 'public');
     $panCard = $request->file('pancard')->store('documents', 'public');
-    $addressProof = $request->file('address_proof')?->store('documents', 'public');
 
     chef_document::create([
         'user_id' => $chef->id,
         'aadhaar_front' => $aadhaarFront,
         'aadhaar_back' => $aadhaarBack,
         'pancard' => $panCard,
-        'address_proof' => $addressProof,
     ]);
 
-    // Save Bank Details
     chef_bank::create([
         'user_id' => $chef->id,
         'account_holder_name' => $request->account_holder_name,
         'account_number' => $request->account_number,
         'ifsc_code' => $request->ifsc_code,
+    ]);
+
+    chef_payment::create([
+        'user_id' => $chef->id,
+        'razorpay_payment_id' => $request->razorpay_payment_id,
+        'razorpay_order_id' => $request->razorpay_order_id,
+        'amount' => 250,
+        'status' => 'success'
     ]);
 
     $token = $chef->createToken('chef-token')->plainTextToken;
