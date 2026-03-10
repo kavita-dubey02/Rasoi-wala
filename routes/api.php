@@ -26,6 +26,7 @@ Route::prefix('chef')->group(function () {
 
 
 Route::middleware(['auth:sanctum', 'role:chef'])->prefix('chef')->group(function () {
+    Route::get('/onboarding-status/{user_id}', [ChefAuthController::class, 'onboardingStatus']);
     Route::post('/create-onboarding-order',[ChefAuthController::class,'createOnboardingOrder']);
 
 Route::post('/verify-onboarding-payment',[ChefAuthController::class,'verifyOnboardingPayment']);

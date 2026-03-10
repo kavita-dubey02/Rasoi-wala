@@ -137,6 +137,26 @@ public function verifyOnboardingPayment(Request $request)
     ]);
 }
 
+//onboarding check
+public function onboardingStatus($user_id)
+{
+    $payment = ChefPayment::where('user_id', $user_id)->first();
+
+    if ($payment) {
+        return response()->json([
+            'status' => 'Success',
+            'onboarding_paid' => true,
+            'message' => 'Onboarding payment completed'
+        ]);
+    } else {
+        return response()->json([
+            'status' => 'Failed',
+            'onboarding_paid' => false,
+            'message' => 'Onboarding payment not done'
+        ]);
+    }
+}
+
 
 public function sendOtp(Request $request, OtpService $otpService)
 {
