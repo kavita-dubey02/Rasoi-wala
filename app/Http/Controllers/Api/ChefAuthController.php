@@ -418,8 +418,9 @@ public function register(Request $request)
 
     return response()->json([
         'message' => 'Login successful',
+        'status' => 'success',
         'token' => $token,
-        'user' => $chef
+        'user' => $chef,
     ]);
 }
 
