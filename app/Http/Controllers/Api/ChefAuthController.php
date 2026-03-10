@@ -119,7 +119,7 @@ public function verifyOnboardingPayment(Request $request)
 
     $user = auth()->user();
 
-    chef_payment::create([
+    ::create([
         'user_id' => $user->id,
         'razorpay_payment_id' => $request->razorpay_payment_id,
         'razorpay_order_id' => $request->razorpay_order_id,
