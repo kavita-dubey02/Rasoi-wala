@@ -123,7 +123,7 @@ public function verifyOnboardingPayment(Request $request)
         'user_id' => $user->id,
         'razorpay_payment_id' => $request->razorpay_payment_id,
         'razorpay_order_id' => $request->razorpay_order_id,
-        'amount' => 200,
+        'amount' => 2100,
         'status' => 'success'
     ]);
 

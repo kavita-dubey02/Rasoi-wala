@@ -23,6 +23,7 @@ class User extends Authenticatable
         'dob',
         'otp',
         'otp_expires_at',
+        'onboarding_paid'
     ];
 
     protected $hidden = [
