@@ -34,14 +34,14 @@ class ChefAuthController extends Controller
 
     $order = $api->order->create([
         'receipt' => 'chef_register_'.time(),
-          'amount' => 100, // ₹1 = 100 paise
+          'amount' => 25000, // ₹250 = 100 paise
         'currency' => 'INR'
     ]);
 
     return response()->json([
         'status' => true,
         'order_id' => $order['id'],
-        'amount' => 100,
+        'amount' => 25000,
         'key' => env('RAZORPAY_KEY')
     ]);
 }
@@ -83,14 +83,14 @@ public function createOnboardingOrder(Request $request)
 
     $order = $api->order->create([
         'receipt' => 'chef_onboarding_' . time(),
-        'amount' => 100, // ₹1 = 100 paise
+        'amount' => 210000, // ₹2100 = 100 paise
         'currency' => 'INR'
     ]);
 
     return response()->json([
         'status' => true,
         'order_id' => $order['id'],
-        'amount' => 100,
+        'amount' => 210000,
         'key' => env('RAZORPAY_KEY')
     ]);
 }
