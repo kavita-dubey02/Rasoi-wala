@@ -140,21 +140,28 @@ public function verifyOnboardingPayment(Request $request)
 //onboarding check
 public function onboardingStatus($user_id)
 {
-    $payment = ChefPayment::where('user_id', $user_id)->first();
+    $user = User::find($user_id);
 
-    if ($payment) {
+    if (!$user) {
+        return response()->json([
+            'status' => 'Failed',
+            'message' => 'User not found'
+        ], 404);
+    }
+
+    if ($user->onboarding_paid == 1) {
         return response()->json([
             'status' => 'Success',
             'onboarding_paid' => true,
             'message' => 'Onboarding payment completed'
-        ]);
-    } else {
-        return response()->json([
-            'status' => 'Failed',
-            'onboarding_paid' => false,
-            'message' => 'Onboarding payment not done'
-        ]);
+        ], 200);
     }
+
+    return response()->json([
+        'status' => 'Failed',
+        'onboarding_paid' => false,
+        'message' => 'Onboarding payment not completed'
+    ], 200);
 }
 
 
