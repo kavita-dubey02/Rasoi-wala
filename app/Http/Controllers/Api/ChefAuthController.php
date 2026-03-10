@@ -407,7 +407,7 @@ public function register(Request $request)
     $chef = User::where('mobile', $request->mobile)->first();
 
     if (!$chef || !Hash::check($request->password, $chef->password)) {
-        return response()->json(['message' => 'Invalid mobile or password', 'status' => 'Failed'], 401);
+        return response()->json(['message' => 'Invalid mobile or password','status' => 'Failed' ], 401);
     }
 
     if (!$chef->hasRole('chef')) {
