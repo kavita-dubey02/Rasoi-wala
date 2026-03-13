@@ -49,8 +49,8 @@ class UserAuthController extends Controller
 
     $smsResponse = $otpService->sendOtp($mobile, $otp);
 
-    \Log::info("[User] Sending OTP: {$otp} to {$mobile}");
-    \Log::info("[User] SMS API Response: " . $smsResponse);
+    // \Log::info("[User] Sending OTP: {$otp} to {$mobile}");
+    // \Log::info("[User] SMS API Response: " . $smsResponse);
 
     return response()->json([
         'status'  => true,

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ChefAuthController;
 use App\Http\Controllers\Api\UserAuthController;
+use App\Http\Controllers\Api\ChefdashboardController;
 use App\Http\Controllers\AuthController;
 
 /*
@@ -26,6 +27,7 @@ Route::prefix('chef')->group(function () {
 
 
 Route::middleware(['auth:sanctum', 'role:chef'])->prefix('chef')->group(function () {
+    Route::get('/dashboard', [ChefdashboardController::class, 'chefDashboard']);
     Route::get('/onboarding-status/{user_id}', [ChefAuthController::class, 'onboardingStatus']);
     Route::post('/create-onboarding-order',[ChefAuthController::class,'createOnboardingOrder']);
 
