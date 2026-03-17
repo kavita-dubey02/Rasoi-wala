@@ -297,7 +297,9 @@ public function verifyOtp(Request $request)
 
 public function register(Request $request)
 {
+DB::beginTransaction();
 
+try {
     if(!$request->razorpay_payment_id){
         return response()->json([
             'message' => 'Payment required before registration'
@@ -413,6 +415,8 @@ public function register(Request $request)
         'amount' => 250,
         'status' => 'success'
     ]);
+  // Commit (IMPORTANT)
+    DB::commit();
 
     $token = $chef->createToken('chef-token')->plainTextToken;
 
@@ -420,6 +424,16 @@ public function register(Request $request)
         'message' => 'Chef registered successfully',
         'token' => $token,
     ]);
+    } catch (\Exception $e) {
+
+    // Rollback (IMPORTANT)
+    DB::rollBack();
+
+    return response()->json([
+        'message' => 'Registration failed',
+        'error' => $e->getMessage() // debug ke liye
+    ], 500);
+}
 }
 
 
